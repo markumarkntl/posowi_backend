@@ -1,5 +1,4 @@
 <?php
-// bootstrap/app.php
 
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -14,10 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Daftarkan Sanctum middleware
-        $middleware->alias([
-            'auth:sanctum' => \Laravel\Sanctum\Http\Middleware\CheckAbilities::class,
-        ]);
+     //
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
