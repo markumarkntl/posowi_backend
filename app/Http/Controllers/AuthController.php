@@ -5,15 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    /**
-     * Login dan kembalikan Plain Text Token
-     */
     public function login(Request $request): JsonResponse
     {
         $request->validate([
@@ -29,10 +25,8 @@ class AuthController extends Controller
             ]);
         }
 
-        // Hapus token lama (opsional, untuk single-session)
         $user->tokens()->delete();
 
-        // Buat Plain Text Token baru
         $token = $user->createToken('pos-app-token')->plainTextToken;
 
         return response()->json([
@@ -44,18 +38,19 @@ class AuthController extends Controller
                     'name'  => $user->name,
                     'email' => $user->email,
                 ],
-                'token' => $token,
+                'token'      => $token,
                 'token_type' => 'Bearer',
             ],
         ], 200);
     }
 
-    /**
-     * Logout: hapus token aktif
-     */
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()->delete();
+        $token = $request->user()->currentAccessToken();
+
+        if ($token) {
+            $token->delete();
+        }
 
         return response()->json([
             'success' => true,
@@ -63,9 +58,6 @@ class AuthController extends Controller
         ]);
     }
 
-    /**
-     * Info user yang sedang login
-     */
     public function me(Request $request): JsonResponse
     {
         return response()->json([

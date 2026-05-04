@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\ProductUpdated;   // ✅ Tambahan import
+use App\Events\ProductUpdated;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -24,15 +24,17 @@ class ProductController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'nama'      => 'required|string|max:255',
-            'harga'     => 'required|numeric|min:0',
-            'stok'      => 'required|integer|min:0',
-            'kategori'  => 'nullable|string|max:100',
+            'nama'     => 'required|string|max:255',
+            'harga'    => 'required|numeric|min:0',
+            'stok'     => 'required|integer|min:0',
+            'kategori' => 'nullable|string|max:100',
         ]);
+
+        $validated['aktif'] = true; // ← pastikan produk baru langsung aktif
 
         $product = Product::create($validated);
 
-        event(new ProductUpdated($product, 'created'));   // ✅ Tambahan
+        event(new ProductUpdated($product, 'created'));
 
         return response()->json([
             'success' => true,
@@ -52,15 +54,16 @@ class ProductController extends Controller
     public function update(Request $request, Product $product): JsonResponse
     {
         $validated = $request->validate([
-            'nama'      => 'sometimes|string|max:255',
-            'harga'     => 'sometimes|numeric|min:0',
-            'stok'      => 'sometimes|integer|min:0',
-            'kategori'  => 'nullable|string|max:100',
+            'nama'     => 'sometimes|string|max:255',
+            'harga'    => 'sometimes|numeric|min:0',
+            'stok'     => 'sometimes|integer|min:0',
+            'kategori' => 'nullable|string|max:100',
+            'aktif'    => 'sometimes|boolean',
         ]);
 
         $product->update($validated);
 
-        event(new ProductUpdated($product, 'updated'));   // ✅ Tambahan
+        event(new ProductUpdated($product, 'updated'));
 
         return response()->json([
             'success' => true,
@@ -73,7 +76,7 @@ class ProductController extends Controller
     {
         $product->update(['aktif' => false]);
 
-        event(new ProductUpdated($product, 'deleted'));   // ✅ Tambahan
+        event(new ProductUpdated($product, 'deleted'));
 
         return response()->json([
             'success' => true,
