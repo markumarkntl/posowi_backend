@@ -11,7 +11,8 @@ class ProductController extends Controller
 {
     public function index(): JsonResponse
     {
-        $products = Product::where('aktif', true)
+        $products = Product::with('kategoriRelasi')
+            ->where('aktif', true)
             ->orderBy('nama')
             ->get();
 
@@ -24,13 +25,13 @@ class ProductController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'nama'     => 'required|string|max:255',
-            'harga'    => 'required|numeric|min:0',
-            'stok'     => 'required|integer|min:0',
-            'kategori' => 'nullable|string|max:100',
+            'nama'        => 'required|string|max:255',
+            'harga'       => 'required|numeric|min:0',
+            'stok'        => 'required|integer|min:0',
+            'kategori_id' => 'nullable|integer|exists:kategoris,id',
         ]);
 
-        $validated['aktif'] = true; // ← pastikan produk baru langsung aktif
+        $validated['aktif'] = true;
 
         $product = Product::create($validated);
 
@@ -39,7 +40,7 @@ class ProductController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Produk berhasil ditambahkan',
-            'data'    => $product,
+            'data'    => $product->load('kategoriRelasi'),
         ], 201);
     }
 
@@ -47,18 +48,18 @@ class ProductController extends Controller
     {
         return response()->json([
             'success' => true,
-            'data'    => $product,
+            'data'    => $product->load('kategoriRelasi'),
         ]);
     }
 
     public function update(Request $request, Product $product): JsonResponse
     {
         $validated = $request->validate([
-            'nama'     => 'sometimes|string|max:255',
-            'harga'    => 'sometimes|numeric|min:0',
-            'stok'     => 'sometimes|integer|min:0',
-            'kategori' => 'nullable|string|max:100',
-            'aktif'    => 'sometimes|boolean',
+            'nama'        => 'sometimes|string|max:255',
+            'harga'       => 'sometimes|numeric|min:0',
+            'stok'        => 'sometimes|integer|min:0',
+            'kategori_id' => 'nullable|integer|exists:kategoris,id',
+            'aktif'       => 'sometimes|boolean',
         ]);
 
         $product->update($validated);
@@ -68,7 +69,7 @@ class ProductController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Produk berhasil diperbarui',
-            'data'    => $product,
+            'data'    => $product->load('kategoriRelasi'),
         ]);
     }
 

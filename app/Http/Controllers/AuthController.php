@@ -25,6 +25,13 @@ class AuthController extends Controller
             ]);
         }
 
+        if (! $user->is_aktif) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akun Anda telah dinonaktifkan.',
+            ], 403);
+        }
+
         $user->tokens()->delete();
 
         $token = $user->createToken('pos-app-token')->plainTextToken;
@@ -34,23 +41,21 @@ class AuthController extends Controller
             'message' => 'Login berhasil',
             'data'    => [
                 'user'  => [
-                    'id'    => $user->id,
-                    'name'  => $user->name,
-                    'email' => $user->email,
+                    'id'       => $user->id,
+                    'nama'     => $user->nama ?? $user->name,
+                    'email'    => $user->email,
+                    'role'     => $user->role,
+                    'is_aktif' => $user->is_aktif,
                 ],
                 'token'      => $token,
                 'token_type' => 'Bearer',
             ],
-        ], 200);
+        ]);
     }
 
     public function logout(Request $request): JsonResponse
     {
-        $token = $request->user()->currentAccessToken();
-
-        if ($token) {
-            $token->delete();
-        }
+        $request->user()->currentAccessToken()->delete();
 
         return response()->json([
             'success' => true,
@@ -60,9 +65,17 @@ class AuthController extends Controller
 
     public function me(Request $request): JsonResponse
     {
+        $user = $request->user();
+
         return response()->json([
             'success' => true,
-            'data'    => $request->user(),
+            'data'    => [
+                'id'       => $user->id,
+                'nama'     => $user->nama ?? $user->name,
+                'email'    => $user->email,
+                'role'     => $user->role,
+                'is_aktif' => $user->is_aktif,
+            ],
         ]);
     }
 }
