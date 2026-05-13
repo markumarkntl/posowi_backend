@@ -12,6 +12,7 @@ class Transaksi extends Model
 
     protected $fillable = [
         'user_id',
+        'pelanggan_id',  // ← tambah
         'pelanggan',
         'subtotal',
         'pajak',
@@ -20,15 +21,23 @@ class Transaksi extends Model
         'status',
     ];
 
+    // FIX: ganti 'decimal:2' → 'float' supaya Laravel kirim angka bukan String
     protected $casts = [
-        'subtotal' => 'decimal:2',
-        'pajak'    => 'decimal:2',
-        'total'    => 'decimal:2',
+        'subtotal'     => 'float',
+        'pajak'        => 'float',
+        'total'        => 'float',
+        'pelanggan_id' => 'integer',
     ];
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    // tambah relasi pelanggan
+    public function pelanggan(): BelongsTo
+    {
+        return $this->belongsTo(Pelanggan::class, 'pelanggan_id');
     }
 
     public function items(): HasMany

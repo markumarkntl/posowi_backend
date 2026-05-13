@@ -12,7 +12,7 @@ class TransaksiController extends Controller
 {
     public function index(): JsonResponse
     {
-        $transaksis = Transaksi::with('items')
+        $transaksis = Transaksi::with('items', 'pelanggan')  // ← load relasi pelanggan
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -24,7 +24,7 @@ class TransaksiController extends Controller
 
     public function show(Transaksi $transaksi): JsonResponse
     {
-        $transaksi->load('items', 'user');
+        $transaksi->load('items', 'user', 'pelanggan');  // ← load relasi pelanggan
 
         return response()->json([
             'success' => true,
@@ -40,6 +40,7 @@ class TransaksiController extends Controller
             'items.*.qty'       => 'required|integer|min:1',
             'items.*.harga'     => 'required|numeric|min:0',
             'metode_pembayaran' => 'nullable|string|max:50',
+            'pelanggan_id'      => 'nullable|integer|exists:pelanggans,id',  // ← tambah
             'pelanggan'         => 'nullable|string|max:255',
             'pajak'             => 'nullable|numeric|min:0',
             'total'             => 'required|numeric|min:0',
@@ -77,6 +78,7 @@ class TransaksiController extends Controller
 
             $transaksi = Transaksi::create([
                 'user_id'           => $request->user()->id,
+                'pelanggan_id'      => $validated['pelanggan_id'] ?? null,  // ← tambah
                 'pelanggan'         => $validated['pelanggan'] ?? null,
                 'subtotal'          => $subtotal,
                 'pajak'             => $validated['pajak'] ?? 0,
@@ -92,7 +94,7 @@ class TransaksiController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Transaksi berhasil disimpan',
-                'data'    => $transaksi->load('items'),
+                'data'    => $transaksi->load('items', 'pelanggan'),  // ← load pelanggan
             ], 201);
 
         } catch (\Throwable $e) {

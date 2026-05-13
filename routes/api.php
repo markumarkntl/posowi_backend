@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\LaporanController;
+use App\Http\Controllers\PelangganController;  // ← tambah
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TransaksiController;
 use App\Http\Controllers\UserController;
@@ -32,6 +33,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('transaksi',             [TransaksiController::class, 'index']);
     Route::get('transaksi/{transaksi}', [TransaksiController::class, 'show']);
     Route::post('transaksi',            [TransaksiController::class, 'store']);
+
+    // Pelanggan ← tambah
+    Route::apiResource('pelanggan', PelangganController::class);
 
     // Laporan
     Route::prefix('laporan')->group(function () {
